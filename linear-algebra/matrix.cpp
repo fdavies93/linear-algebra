@@ -106,18 +106,42 @@ matrix matrix::operator*(const matrix& toMultiply) const
 	{
 		double cellTotal = 0;
 		std::vector<double> curRow;
-		for (unsigned int rowI = 0; rowI < columns(); ++rowI)//row of result
+		matrix result;
+		for (unsigned int rowI = 0; rowI < rows(); ++rowI)//row of result
 		{
-			for (unsigned int colI = 0; colI < toMultiply.columns; ++colI)//column of result
+			curRow.clear();
+			for (unsigned int colI = 0; colI < toMultiply.columns(); ++colI)//column of result
 			{
 				cellTotal = 0;
-				for (unsigned int stepI = 0; stepI < colI; ++stepI)
+				for (unsigned int stepI = 0; stepI < columns(); ++stepI)
 				{
+					cellTotal += (data[rowI % rows()][stepI] * toMultiply[stepI][colI % toMultiply.columns()]);
 				}
+				curRow.push_back(cellTotal);
 			}
+			result.addRow(curRow);
 		}
+		return result;
 	}
 	else return empty();
+}
+
+matrix matrix::identity()
+{
+	unsigned int size = rows();
+	std::vector<double> curRow;
+	matrix result;
+	for (unsigned int rowI = 0; rowI < size; ++rowI)
+	{
+		curRow.clear();
+		for (unsigned int colI = 0; colI < size; ++colI)
+		{
+			if (rowI == colI) curRow.push_back(1);
+			else curRow.push_back(0);
+		}
+		result.addRow(curRow);
+	}
+	return result;
 }
 
 void matrix::clear()

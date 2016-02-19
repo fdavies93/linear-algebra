@@ -7,15 +7,19 @@ private:
 	std::vector<std::vector<double>> data;
 	void copy(const matrix&);
 public:
-	//constructors
+	//generic constructor
 	matrix();
+	//copy constructor
 	matrix(const matrix&);
-	//matrix identity();
+	//generates identity matrix for this matrix
+	matrix identity();
+    //used for throwing errors without breaking program (?)
 	static matrix empty();
 	void addRow(const std::vector<double>&);
 	matrix operator+(const matrix&) const;
 	matrix operator-(const matrix&) const;
 	matrix operator=(const matrix&);
+	//allows matrix to be declared with initialiser list
 	matrix operator=(std::initializer_list<std::vector<double>>);
 	matrix operator*(const double) const;
 	matrix operator*(const matrix&) const;
