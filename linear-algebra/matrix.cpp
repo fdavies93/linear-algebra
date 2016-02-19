@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "matrix.h"
+#include <cassert>
 
 matrix matrix::empty()
 {
@@ -126,7 +127,7 @@ matrix matrix::operator*(const matrix& toMultiply) const
 	else return empty();
 }
 
-matrix matrix::identity()
+matrix matrix::identity() const
 {
 	unsigned int size = rows();
 	std::vector<double> curRow;
@@ -142,6 +143,41 @@ matrix matrix::identity()
 		result.addRow(curRow);
 	}
 	return result;
+}
+
+double matrix::determinant() const
+{
+	if (columns() == rows())
+	{
+		double result = 0;
+		if (columns() == 2) // we can calculate it as a number!
+		{
+			result = (data[0][0] * data[1][1]) - (data[0][1] * data[1][0]);
+		}
+		else //gotta generate more matrices
+		{
+			int sign = 1;
+			matrix curMatrix;
+			std::vector<double> curRow;
+			for (unsigned int colI = 0; colI < columns(); ++colI)
+			{
+				curMatrix.clear();
+				for (unsigned int row2I = 1; row2I < rows(); ++row2I)
+				{
+					curRow.clear();
+					for (unsigned int col2I = 0; col2I < columns(); ++col2I)
+					{
+						if (col2I != colI) curRow.push_back(data[row2I][col2I]);
+					}
+					curMatrix.addRow(curRow);
+				}
+				result += (data[0][colI] * curMatrix.determinant() * sign);
+				sign *= -1;
+			}
+		}
+		return result;
+	}
+	else assert(false);
 }
 
 void matrix::clear()

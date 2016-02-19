@@ -12,8 +12,10 @@ public:
 	//copy constructor
 	matrix(const matrix&);
 	//generates identity matrix for this matrix
-	matrix identity();
-    //used for throwing errors without breaking program (?)
+	matrix identity() const;
+	//calculates determinant
+	double determinant() const;
+    //used for throwing errors without breaking program (uncertain usefulness)
 	static matrix empty();
 	void addRow(const std::vector<double>&);
 	matrix operator+(const matrix&) const;
