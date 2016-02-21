@@ -101,6 +101,11 @@ matrix matrix::operator*(const double scalar) const
 	return result;
 }
 
+void matrix::operator*=(const double scalar)
+{
+	*this = *this * scalar;
+}
+
 matrix matrix::operator*(const matrix& toMultiply) const
 {
 	if (toMultiply.rows() == columns())
@@ -125,6 +130,11 @@ matrix matrix::operator*(const matrix& toMultiply) const
 		return result;
 	}
 	else return empty();
+}
+
+void matrix::operator*=(const matrix& toMultiply)
+{
+	*this = *this * toMultiply;
 }
 
 matrix matrix::identity() const
@@ -178,6 +188,22 @@ double matrix::determinant() const
 		return result;
 	}
 	else assert(false);
+}
+
+matrix matrix::transpose() const
+{
+	std::vector<double> curRow;
+	matrix result;
+	for (unsigned int colI = 0; colI < columns(); ++colI)
+	{
+		curRow.clear();
+		for (unsigned int rowI = 0; rowI < rows(); ++rowI)
+		{
+			curRow.push_back(data[rowI][colI]);
+		}
+		result.addRow(curRow);
+	}
+	return result;
 }
 
 void matrix::clear()
