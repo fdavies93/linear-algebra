@@ -13,13 +13,15 @@ public:
 	matrix(const matrix&);
 	//generates and returns identity matrix for this matrix
 	matrix identity() const;
+	//gets submatrix excluding (r, c)
+	matrix getSubMatrix(const unsigned int, const unsigned int) const;
 	//calculates and returns determinant
 	double determinant() const;
 	//calculates and returns transposed matrix
 	matrix transpose() const;
-	
-    //used for throwing errors without breaking program (uncertain usefulness)
-	static matrix empty();
+	//calculates and returns inverse matrix
+	matrix inverse() const;
+
 	void addRow(const std::vector<double>&);
 	matrix operator+(const matrix&) const;
 	matrix operator-(const matrix&) const;

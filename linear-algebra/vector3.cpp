@@ -75,12 +75,22 @@ vector3 vector3::rotateByEuler(const double& xR, const double& yR, const double&
 	matrix calcMatrix = toColumnMatrix();
 	matrix rotMatrix;
 	rotMatrix = { {1, 0, 0}, {0, cos(xR), sin(xR)}, {0, -sin(xR), cos(xR) } };//x matrix
-	calcMatrix = rotMatrix * calcMatrix;//problem here (shit)
+	calcMatrix = rotMatrix * calcMatrix;
 	rotMatrix = { {cos(yR), 0, -sin(yR)}, {0, 1, 0}, {sin(yR),0,cos(yR)} }; //y matrix
 	calcMatrix = rotMatrix * calcMatrix;
 	rotMatrix = { {cos(zR), sin(zR), 0}, {-sin(zR), cos(zR), 0}, {0,0,1} };//z matrix
 	calcMatrix = rotMatrix * calcMatrix;
 	vector3 result(calcMatrix[0][0], calcMatrix[1][0], calcMatrix[2][0]);
-	//printf("yo");
+	return result;
+}
+
+vector3 vector3::toUnitVector() const
+{
+	vector3 result;
+	double scaleFactor;
+	scaleFactor = 1 / (x + y + z);
+	result.x = x * scaleFactor;
+	result.y = y * scaleFactor;
+	result.z = z * scaleFactor;
 	return result;
 }

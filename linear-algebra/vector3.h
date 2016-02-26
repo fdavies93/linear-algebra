@@ -16,4 +16,5 @@ public:
 	vector3 crossProduct(const vector3&) const;
 	matrix toColumnMatrix() const;
 	vector3 rotateByEuler(const double&, const double&, const double&) const;
+	vector3 toUnitVector() const;
 };

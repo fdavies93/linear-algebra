@@ -2,12 +2,6 @@
 #include "matrix.h"
 #include <cassert>
 
-matrix matrix::empty()
-{
-	matrix empty;
-	return empty;
-}
-
 void matrix::copy(const matrix& toCopy)
 {
 	for (unsigned int curRow = 0; curRow < toCopy.rows(); ++curRow)
@@ -28,41 +22,36 @@ matrix::matrix(const matrix& toCopy)
 
 void matrix::addRow(const std::vector<double>& toAdd)
 {
+	if (data.size() > 0) assert(toAdd.size() == data[0].size());//forces square matrix
 	data.push_back(toAdd);
 }
 
 matrix matrix::operator+(const matrix& toAdd) const
 {
-	if (toAdd.rows() == rows() && toAdd.columns() == columns())
+	assert(toAdd.rows() == rows() && toAdd.columns() == columns());
+	matrix result;
+	std::vector<double> curRow;
+	for (unsigned int rowI = 0; rowI < rows(); ++rowI)
 	{
-		matrix result;
-		std::vector<double> curRow;
-		for (unsigned int rowI = 0; rowI < rows(); ++rowI)
-		{
-			curRow = toAdd[rowI];
-			for (unsigned int colI = 0; colI < columns(); ++colI) curRow[colI] += data[rowI][colI];
-			result.addRow(curRow);
-		}
-		return result;
+		curRow = toAdd[rowI];
+		for (unsigned int colI = 0; colI < columns(); ++colI) curRow[colI] += data[rowI][colI];
+		result.addRow(curRow);
 	}
-	else return empty();
+	return result;
 }
 
 matrix matrix::operator-(const matrix& toSubtract) const
 {
-	if (toSubtract.rows() == rows() && toSubtract.columns() == columns())
+	assert(toSubtract.rows() == rows() && toSubtract.columns() == columns());
+	matrix result;
+	std::vector<double> curRow;
+	for (unsigned int rowI = 0; rowI < rows(); ++rowI)
 	{
-		matrix result;
-		std::vector<double> curRow;
-		for (unsigned int rowI = 0; rowI < rows(); ++rowI)
-		{
-			curRow = toSubtract[rowI];
-			for (unsigned int colI = 0; colI < columns(); ++colI) curRow[colI] -= data[rowI][colI];
-			result.addRow(curRow);
-		}
-		return result;
+		curRow = toSubtract[rowI];
+		for (unsigned int colI = 0; colI < columns(); ++colI) curRow[colI] -= data[rowI][colI];
+		result.addRow(curRow);
 	}
-	else return empty();
+	return result;
 }
 
 matrix matrix::operator=(const matrix& toCopy)
@@ -78,7 +67,7 @@ matrix matrix::operator=(std::initializer_list<std::vector<double>> it_list)
 	std::initializer_list<std::vector<double>>::iterator it;
 	for (it = it_list.begin(); it != it_list.end(); ++it)
 	{
-		data.push_back(*it);
+		addRow(*it);
 	}
 	return *this;
 }
@@ -108,28 +97,25 @@ void matrix::operator*=(const double scalar)
 
 matrix matrix::operator*(const matrix& toMultiply) const
 {
-	if (toMultiply.rows() == columns())
+	assert(toMultiply.rows() == columns());
+	double cellTotal = 0;
+	std::vector<double> curRow;
+	matrix result;
+	for (unsigned int rowI = 0; rowI < rows(); ++rowI)//row of result
 	{
-		double cellTotal = 0;
-		std::vector<double> curRow;
-		matrix result;
-		for (unsigned int rowI = 0; rowI < rows(); ++rowI)//row of result
+		curRow.clear();
+		for (unsigned int colI = 0; colI < toMultiply.columns(); ++colI)//column of result
 		{
-			curRow.clear();
-			for (unsigned int colI = 0; colI < toMultiply.columns(); ++colI)//column of result
+			cellTotal = 0;
+			for (unsigned int stepI = 0; stepI < columns(); ++stepI)
 			{
-				cellTotal = 0;
-				for (unsigned int stepI = 0; stepI < columns(); ++stepI)
-				{
-					cellTotal += (data[rowI % rows()][stepI] * toMultiply[stepI][colI % toMultiply.columns()]);
-				}
-				curRow.push_back(cellTotal);
+				cellTotal += (data[rowI % rows()][stepI] * toMultiply[stepI][colI % toMultiply.columns()]);
 			}
-			result.addRow(curRow);
+			curRow.push_back(cellTotal);
 		}
-		return result;
+		result.addRow(curRow);
 	}
-	else return empty();
+	return result;
 }
 
 void matrix::operator*=(const matrix& toMultiply)
@@ -151,6 +137,26 @@ matrix matrix::identity() const
 			else curRow.push_back(0);
 		}
 		result.addRow(curRow);
+	}
+	return result;
+}
+
+matrix matrix::getSubMatrix(const unsigned int exRow, const unsigned int exCol) const
+{
+	assert(exRow < rows() && exRow >= 0 && exCol < columns() && exRow >= 0);
+	matrix result;
+	std::vector<double> curRow;
+	for (unsigned int rowI = 0; rowI < rows(); ++rowI)
+	{
+		if (rowI != exRow)
+		{
+			curRow.clear();
+			for (unsigned int colI = 0; colI < columns(); ++colI)
+			{
+				if (colI != exCol) curRow.push_back(data[rowI][colI]);
+			}
+			result.addRow(curRow);
+		}
 	}
 	return result;
 }
@@ -203,6 +209,40 @@ matrix matrix::transpose() const
 		}
 		result.addRow(curRow);
 	}
+	return result;
+}
+
+matrix matrix::inverse() const
+{
+	assert(rows() == columns());//you can only invert a square matrix
+	double det = determinant();
+	assert(det != 0);//can't invert a matrix with determinant of 0 (breaking might not be best solution)
+	matrix result;
+	std::vector<double> curRow;
+	double curDeterm;
+	bool invert = false;
+	if (rows() == 2)//don't bother building a matrix
+	{
+		result = { {data[1][1], -data[0][1]} , {-data[1][0], data[0][0]} };
+	}
+	else {//build matrix of cofactors
+		for (unsigned int rowI = 0; rowI < rows(); ++rowI)
+		{
+			curRow.clear();
+			for (unsigned int colI = 0; colI < columns(); ++colI)
+			{
+				curDeterm = getSubMatrix(rowI, colI).determinant();
+				if (invert) curDeterm *= -1;
+				curRow.push_back(curDeterm);
+				invert = !invert;
+			}
+			result.addRow(curRow);
+		}
+		//transpose (to adjugate)...
+		result = result.transpose();
+	}
+	//and multiply with inverse of determinant
+	result = result * (1 / det);
 	return result;
 }
 
